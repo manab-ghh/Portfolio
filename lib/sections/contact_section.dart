@@ -1,124 +1,420 @@
 import 'package:flutter/material.dart';
-import '../core/colors.dart';
-import '../core/launcher.dart';
-import '../widgets/common.dart';
-import '../widgets/wrap_grid.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../app/theme.dart';
+import '../data/portfolio_data.dart';
+import '../utils/launcher.dart';
+import '../utils/responsive.dart';
+import '../widgets/app_icon.dart';
+import '../widgets/section_title.dart';
+import '../widgets/social_button.dart';
 
-class ContactSection extends StatelessWidget {
+class ContactSection extends StatefulWidget {
   const ContactSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return SectionWrap(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SectionTitle('📬  Get In Touch'),
-          const SizedBox(height: 8),
-          const Text(
-            'Feel free to reach out — whether it\'s collaboration, opportunities, or just a hello! 🚀',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 15, height: 1.6),
-          ),
-          const SizedBox(height: 20),
-          LayoutBuilder(
-            builder: (_, c) => WrapGrid(
-              cols: c.maxWidth > 700 ? 2 : 1,
-              spacing: 12,
-              children: _contacts.map((c) => _ContactCard(c)).toList(),
-            ),
-          ),
-        ],
-      ),
-    );
+  State<ContactSection> createState() => _ContactSectionState();
+}
+
+class _ContactSectionState extends State<ContactSection> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _subjectController = TextEditingController();
+  final _messageController = TextEditingController();
+
+  bool _isSent = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _subjectController.dispose();
+    _messageController.dispose();
+    super.dispose();
   }
-}
 
-class _ContactData {
-  final IconData icon;
-  final String platform, handle, url;
-  final Color color;
-  const _ContactData(this.icon, this.platform, this.handle, this.url, this.color);
-}
+  void _handleSubmit() {
+    if (_formKey.currentState?.validate() ?? false) {
+      final subject = _subjectController.text.trim().isNotEmpty
+          ? _subjectController.text.trim()
+          : 'Portfolio Inquiry from ${_nameController.text.trim()}';
 
-const _contacts = [
-  _ContactData(Icons.email,     'Email',     'manabendra2006mondal@gmail.com',    'mailto:manabendra2006mondal@gmail.com',                     Color(0xFFEA4335)),
-  _ContactData(Icons.work,      'LinkedIn',  'manabendra-mondal-22254434a',       'https://www.linkedin.com/in/manabendra-mondal-22254434a',    Color(0xFF0A66C2)),
-  _ContactData(Icons.code,      'GitHub',    '@manab-ghh',                        'https://github.com/manab-ghh',                              Color(0xFF181717)),
-  _ContactData(Icons.close,     'Twitter/X', '@manabendra87314',                  'https://twitter.com/@manabendra87314',                       Colors.black),
-  _ContactData(Icons.leaderboard,'Codeforces','manab.code',                       'https://codeforces.com/profile/manab.code',                  Color(0xFF1F8ACB)),
-  _ContactData(Icons.psychology, 'LeetCode', 'manab__344',                        'https://www.leetcode.com/manab__344',                        Color(0xFFFFA116)),
-  _ContactData(Icons.science,   'Kaggle',    'manabendramondal',                  'https://kaggle.com/manabendramondal',                        Color(0xFF20BEFF)),
-  _ContactData(Icons.language,  'Portfolio', 'portfolio-37689.web.app',           'https://portfolio-37689.web.app',                           Color(0xFFFF5722)),
-];
+      final body =
+          'Name: ${_nameController.text.trim()}\nEmail: ${_emailController.text.trim()}\n\nMessage:\n${_messageController.text.trim()}';
 
-class _ContactCard extends StatefulWidget {
-  const _ContactCard(this.data);
-  final _ContactData data;
+      UrlHelper.sendEmail(
+        PortfolioData.email,
+        subject: subject,
+        body: body,
+      );
 
-  @override
-  State<_ContactCard> createState() => _ContactCardState();
-}
+      setState(() => _isSent = true);
 
-class _ContactCardState extends State<_ContactCard> {
-  bool _hovered = false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Email client opened! You can also reach me directly at mondalmanabendra001@gmail.com',
+            style: TextStyle(fontFamily: 'Inter'),
+          ),
+          backgroundColor: AppColors.primary,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final d = widget.data;
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => launch(d.url),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: _hovered ? d.color : AppColors.border,
-            ),
-          ),
-          child: Row(
+    final isMobile = Responsive.isMobile(context);
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: Responsive.horizontalPadding(context),
+        vertical: isMobile ? AppSpacing.sectionMobile : AppSpacing.section,
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1140),
+          child: Column(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: d.color.withAlpha(40),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                alignment: Alignment.center,
-                child: Icon(d.icon, color: d.color, size: 20),
+              const SectionTitle(
+                tag: 'Contact',
+                title: "Let's Build Something Together",
+                subtitle:
+                    'Have an opportunity, project collaboration, or just want to chat engineering? Reach out anytime!',
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
+              if (isMobile) ...[
+                _buildContactInfo(),
+                const SizedBox(height: AppSpacing.xl),
+                _buildContactForm(),
+              ] else ...[
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(d.platform,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        )),
-                    Text(d.handle,
-                        style: const TextStyle(
-                          color: AppColors.textMuted,
-                          fontSize: 12,
-                        ),
-                        overflow: TextOverflow.ellipsis),
+                    Expanded(
+                      flex: 4,
+                      child: _buildContactInfo(),
+                    ),
+                    const SizedBox(width: 48),
+                    Expanded(
+                      flex: 6,
+                      child: _buildContactForm(),
+                    ),
                   ],
                 ),
-              ),
-              Icon(Icons.arrow_forward_ios,
-                  color: AppColors.textMuted, size: 12),
+              ],
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildContactInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Direct Information',
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        const Text(
+          'Feel free to connect directly via email or check out my profiles across the web.',
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 14,
+            color: AppColors.textSecondary,
+            height: 1.6,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+
+        // Email row
+        _buildInfoTile(
+          icon: FontAwesomeIcons.envelope,
+          title: 'Email',
+          value: PortfolioData.email,
+          onTap: () => UrlHelper.sendEmail(PortfolioData.email),
+        ),
+
+        // Location row
+        _buildInfoTile(
+          icon: FontAwesomeIcons.locationDot,
+          title: 'Location',
+          value: PortfolioData.location,
+        ),
+
+        // Availability row
+        _buildInfoTile(
+          icon: FontAwesomeIcons.briefcase,
+          title: 'Opportunity Status',
+          value: 'Open to internships & full-time developer roles',
+        ),
+
+        const SizedBox(height: AppSpacing.lg),
+        const Text(
+          'Connect on Social Platforms',
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        const Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            SocialButton(
+              icon: FontAwesomeIcons.github,
+              tooltip: 'GitHub',
+              url: PortfolioData.githubUrl,
+            ),
+            SocialButton(
+              icon: FontAwesomeIcons.linkedin,
+              tooltip: 'LinkedIn',
+              url: PortfolioData.linkedinUrl,
+            ),
+            SocialButton(
+              icon: FontAwesomeIcons.code,
+              tooltip: 'LeetCode',
+              url: PortfolioData.leetcodeUrl,
+            ),
+            SocialButton(
+              icon: FontAwesomeIcons.trophy,
+              tooltip: 'Codeforces',
+              url: PortfolioData.codeforcesUrl,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoTile({
+    required dynamic icon,
+    required String title,
+    required String value,
+    VoidCallback? onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.radiusMd,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceElevated,
+                borderRadius: AppRadius.radiusMd,
+                border: Border.all(color: AppColors.borderSubtle),
+              ),
+              child: AppIcon(icon, size: 16, color: AppColors.primary),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactForm() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppRadius.radiusLg,
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Send a Direct Message',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Name
+            _buildTextField(
+              controller: _nameController,
+              label: 'Your Name',
+              hint: 'John Doe',
+              validator: (v) => (v == null || v.trim().isEmpty) ? 'Please enter your name' : null,
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // Email
+            _buildTextField(
+              controller: _emailController,
+              label: 'Your Email',
+              hint: 'john@example.com',
+              keyboardType: TextInputType.emailAddress,
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return 'Please enter your email';
+                if (!v.contains('@') || !v.contains('.')) return 'Please enter a valid email';
+                return null;
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // Subject
+            _buildTextField(
+              controller: _subjectController,
+              label: 'Subject',
+              hint: 'Software Opportunity / Project Discussion',
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // Message
+            _buildTextField(
+              controller: _messageController,
+              label: 'Message',
+              hint: 'Hello Manabendra, I would love to talk about...',
+              maxLines: 4,
+              validator: (v) => (v == null || v.trim().isEmpty) ? 'Please enter your message' : null,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Submit Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _handleSubmit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: AppRadius.radiusMd,
+                  ),
+                  elevation: 4,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(_isSent ? Icons.check_circle_outline_rounded : Icons.send_rounded, size: 16),
+                    const SizedBox(width: 8),
+                    Text(
+                      _isSent ? 'Message Prepared (Open Email)' : 'Send Message',
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    int maxLines = 1,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFFCBD5E1),
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: controller,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+          validator: validator,
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 14,
+            color: Colors.white,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 14,
+              color: AppColors.textMuted,
+            ),
+            filled: true,
+            fillColor: AppColors.surfaceElevated,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: AppRadius.radiusMd,
+              borderSide: const BorderSide(color: AppColors.borderSubtle),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: AppRadius.radiusMd,
+              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: AppRadius.radiusMd,
+              borderSide: const BorderSide(color: AppColors.rose),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: AppRadius.radiusMd,
+              borderSide: const BorderSide(color: AppColors.rose, width: 1.5),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

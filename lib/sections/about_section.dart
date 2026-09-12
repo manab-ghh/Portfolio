@@ -1,34 +1,126 @@
 import 'package:flutter/material.dart';
-import '../core/colors.dart';
-import '../widgets/common.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../app/theme.dart';
+import '../data/portfolio_data.dart';
+import '../utils/responsive.dart';
+import '../widgets/app_icon.dart';
+import '../widgets/section_title.dart';
 
 class AboutSection extends StatelessWidget {
   const AboutSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SectionWrap(
+    final isMobile = Responsive.isMobile(context);
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: Responsive.horizontalPadding(context),
+        vertical: isMobile ? AppSpacing.sectionMobile : AppSpacing.section,
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1140),
+          child: Column(
+            children: [
+              const SectionTitle(
+                tag: 'About Me',
+                title: 'Engineering Mindset & Technical Foundations',
+                subtitle:
+                    'Bridging deep algorithmic understanding with modern full-stack development and artificial intelligence.',
+              ),
+              if (isMobile) ...[
+                _buildDeveloperCard(isMobile: true),
+                const SizedBox(height: AppSpacing.xl),
+                _buildBioContent(),
+              ] else ...[
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: _buildDeveloperCard(isMobile: false),
+                    ),
+                    const SizedBox(width: 48),
+                    Expanded(
+                      flex: 6,
+                      child: _buildBioContent(),
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: AppSpacing.xxl),
+              // Stats Grid
+              _buildStatsGrid(context),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeveloperCard({required bool isMobile}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppRadius.radiusLg,
+        border: Border.all(color: AppColors.borderSubtle),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionTitle('🧑‍💻  About Me'),
-          const SizedBox(height: 20),
-          GlassCard(
+          // Terminal Window Title Bar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: const BoxDecoration(
+              color: AppColors.surfaceElevated,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg - 1)),
+              border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
+            ),
+            child: Row(
+              children: [
+                Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFFFF5F56), shape: BoxShape.circle)),
+                const SizedBox(width: 6),
+                Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFFFFBD2E), shape: BoxShape.circle)),
+                const SizedBox(width: 6),
+                Container(width: 10, height: 10, decoration: const BoxDecoration(color: Color(0xFF27C93F), shape: BoxShape.circle)),
+                const SizedBox(width: 14),
+                const Text(
+                  'manab@workstation:~',
+                  style: TextStyle(
+                    fontFamily: 'Fira Code',
+                    fontSize: 12,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'I\'m a Computer Science Engineering student with a strong foundation in DSA, '
-                  'competitive programming, and cross-platform mobile development — currently '
-                  'deepening my backend engineering skills and actively exploring the AI/ML landscape.',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 15,
-                    height: 1.8,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                ..._rows.map((r) => _AboutRow(r[0], r[1], r[2])),
+                _terminalLine(r'$ whoami', 'manabendra_mondal'),
+                const SizedBox(height: 10),
+                _terminalLine(r'$ focus', 'Backend, Flutter & AI Systems'),
+                const SizedBox(height: 10),
+                _terminalLine(r'$ location', 'Kolkata, WB, India 🇮🇳'),
+                const SizedBox(height: 10),
+                _terminalLine(r'$ languages', 'C++, Dart, JS, Python, SQL'),
+                const SizedBox(height: 10),
+                _terminalLine(r'$ dsa_problems', '500+ Solved (LC/CF)'),
+                const SizedBox(height: 10),
+                _terminalLine(r'$ status', '🟢 Open for Opportunities'),
               ],
             ),
           ),
@@ -36,57 +128,195 @@ class AboutSection extends StatelessWidget {
       ),
     );
   }
-}
 
-const _rows = [
-  ['🎓', 'CS Engineering student',      'core fundamentals, algorithms, systems'],
-  ['🧩', 'DSA & Competitive Programming','C++, Codeforces, LeetCode'],
-  ['📱', 'Flutter / Dart',              'production-ready cross-platform mobile apps'],
-  ['⚙️', 'Backend Engineering',          'Node.js, Express.js, REST APIs, Socket.IO'],
-  ['🗄️', 'Databases',                    'MongoDB, MySQL, PostgreSQL, SQLite'],
-  ['☁️', 'Cloud & DevOps',               'learning Docker, AWS, Linux workflows'],
-  ['🤖', 'AI / ML',                      'exploring Machine Learning, Deep Learning, GenAI'],
-  ['🧠', 'LLMs & Transformers',          'model architectures, fine-tuning, NLP'],
-  ['🕸️', 'Agentic AI',                   'LangChain, AI Agents, RAG systems'],
-  ['🚀', 'Vision',                       'intelligent, scalable software at backend + AI intersection'],
-];
+  Widget _terminalLine(String prompt, String output) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          prompt,
+          style: const TextStyle(
+            fontFamily: 'Fira Code',
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: AppColors.cyan,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          output,
+          style: const TextStyle(
+            fontFamily: 'Fira Code',
+            fontSize: 13,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
 
-class _AboutRow extends StatelessWidget {
-  const _AboutRow(this.emoji, this.label, this.desc);
-  final String emoji, label, desc;
+  Widget _buildBioContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Who I Am',
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        const Text(
+          PortfolioData.fullBio,
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 15,
+            color: AppColors.textSecondary,
+            height: 1.7,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
 
-  @override
-  Widget build(BuildContext context) {
+        // Core Pillars
+        _buildPillar(
+          icon: FontAwesomeIcons.terminal,
+          title: 'Algorithmic Rigor (C++ & DSA)',
+          description:
+              '500+ problems solved with strong mastery over graph theory, dynamic programming, and data structures.',
+        ),
+        _buildPillar(
+          icon: FontAwesomeIcons.server,
+          title: 'Scalable Backend Services (Node.js & Go)',
+          description:
+              'Designing RESTful and asynchronous architectures with SQL/NoSQL databases and containerization.',
+        ),
+        _buildPillar(
+          icon: FontAwesomeIcons.mobileScreen,
+          title: 'Cross-Platform Mastery (Flutter)',
+          description:
+              'Crafting responsive, resilient user interfaces with clean architecture and reactive state management.',
+        ),
+        _buildPillar(
+          icon: FontAwesomeIcons.brain,
+          title: 'Applied AI & LLMs',
+          description:
+              'Integrating generative models, embeddings, and autonomous agent loops into production applications.',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPillar({
+    required dynamic icon,
+    required String title,
+    required String description,
+  }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 18)),
-          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceElevated,
+              borderRadius: AppRadius.radiusSm,
+              border: Border.all(color: AppColors.borderSubtle),
+            ),
+            child: AppIcon(icon, size: 14, color: AppColors.primary),
+          ),
+          const SizedBox(width: 14),
           Expanded(
-            child: RichText(
-              text: TextSpan(
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                  height: 1.5,
-                ),
-                children: [
-                  TextSpan(
-                    text: '$label  ',
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
                   ),
-                  TextSpan(text: '— $desc'),
-                ],
-              ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildStatsGrid(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 650;
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: isNarrow ? 2 : 4,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: isNarrow ? 1.6 : 2.0,
+          ),
+          itemCount: PortfolioData.stats.length,
+          itemBuilder: (context, index) {
+            final stat = PortfolioData.stats[index];
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: AppRadius.radiusMd,
+                border: Border.all(color: AppColors.borderSubtle),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ShaderMask(
+                    blendMode: BlendMode.srcIn,
+                    shaderCallback: (bounds) =>
+                        AppColors.primaryGradient.createShader(bounds),
+                    child: Text(
+                      stat['value']!,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    stat['label']!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
